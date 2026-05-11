@@ -27,13 +27,30 @@ struct LyricsLayoutEngine {
 
         let collapsedHeight: CGFloat
         if settings.showBottomLyrics {
-            collapsedHeight = settings.lineMode == .double || settings.showTranslation ? 94 : 76
+            collapsedHeight = settings.lineMode == .double || settings.showTranslation ? 90 : 72
         } else {
-            collapsedHeight = 50
+            collapsedHeight = 46
         }
 
-        let expandedWidth: CGFloat = settings.showTranslation ? 784 : 748
-        let expandedHeight: CGFloat = settings.lineMode == .double ? 262 : 236
+        let expandedWidth: CGFloat
+        switch settings.widthMode {
+        case .default:
+            expandedWidth = settings.showTranslation ? 520 : 480
+        case .adaptive:
+            let charWidth = CGFloat(max(referenceText.count, nextText.count)) * 8.0 + 140
+            expandedWidth = min(max(420, charWidth), 620)
+        case .maxWidth:
+            expandedWidth = 640
+        }
+
+        let expandedHeight: CGFloat
+        if settings.showTranslation && settings.lineMode == .double {
+            expandedHeight = 280
+        } else if settings.showTranslation || settings.lineMode == .double {
+            expandedHeight = 256
+        } else {
+            expandedHeight = 232
+        }
 
         return OverlayLayout(
             collapsedWidth: width,
