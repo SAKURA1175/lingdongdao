@@ -7,7 +7,7 @@ struct LingdongdaoApp: App {
     var body: some Scene {
         Settings {
             SettingsView(state: appDelegate.overlayState)
-                .frame(width: 460, height: 540)
+                .frame(width: 480, height: 680)
         }
         .commands {
             CommandMenu("灵动岛") {
