@@ -7,16 +7,48 @@ struct SettingsView: View {
         Form {
             Section("显示") {
                 Toggle("显示灵动岛", isOn: $state.settings.showIsland)
-                Toggle("鼠标停靠自动展开", isOn: $state.settings.expandOnHover)
                 Toggle("灵动岛底部歌词", isOn: $state.settings.showBottomLyrics)
                 Toggle("显示翻译", isOn: $state.settings.showTranslation)
                 Toggle("使用封面主色", isOn: $state.settings.useArtworkColors)
                 Toggle("切歌动画", isOn: $state.settings.enableTrackAnimation)
                 Toggle("全屏时隐藏", isOn: $state.settings.hideInFullScreen)
                 Toggle("简洁动效模式", isOn: $state.settings.reduceMotion)
+                Toggle("卡拉OK模式 (滚动染色)", isOn: $state.settings.karaokeMode)
+                    .help("开启后，歌词会随着播放进度双色填充滚动。")
+                
+                if state.settings.karaokeMode {
+                    Picker("卡拉OK渲染方向", selection: $state.settings.karaokeFillDirection) {
+                        ForEach(KaraokeFillDirection.allCases) { direction in
+                            Text(direction.label).tag(direction)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+            }
+
+            Section("位置") {
+                Picker("垂直位置", selection: $state.settings.verticalAnchor) {
+                    ForEach(OverlayVerticalAnchor.allCases) { anchor in
+                        Text(anchor.label).tag(anchor)
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                Picker("水平位置", selection: $state.settings.horizontalAnchor) {
+                    ForEach(OverlayHorizontalAnchor.allCases) { anchor in
+                        Text(anchor.label).tag(anchor)
+                    }
+                }
+                .pickerStyle(.segmented)
             }
 
             Section("布局") {
+                Picker("胶囊样式", selection: $state.settings.islandStyle) {
+                    ForEach(IslandStyle.allCases) { style in
+                        Text(style.label).tag(style)
+                    }
+                }
+
                 Picker("歌词布局", selection: $state.settings.lineMode) {
                     ForEach(LyricsLineMode.allCases) { mode in
                         Text(mode.label).tag(mode)
@@ -32,6 +64,22 @@ struct SettingsView: View {
                 Picker("歌词对齐", selection: $state.settings.lyricsAlignment) {
                     ForEach(LyricsTextAlignmentOption.allCases) { alignment in
                         Text(alignment.label).tag(alignment)
+                    }
+                }
+
+                LabeledContent("行距") {
+                    HStack {
+                        Slider(value: $state.settings.lyricLineSpacing, in: 0...12, step: 1)
+                            .frame(width: 180)
+                        Text("\(Int(state.settings.lyricLineSpacing))")
+                            .monospacedDigit()
+                            .frame(width: 24, alignment: .trailing)
+                    }
+                }
+
+                Picker("字体颜色", selection: $state.settings.lyricColorStyle) {
+                    ForEach(LyricsColorStyle.allCases) { style in
+                        Text(style.label).tag(style)
                     }
                 }
             }
