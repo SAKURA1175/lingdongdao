@@ -6,10 +6,12 @@ protocol PlaybackSource: AnyObject {
     func stop()
 }
 
+@MainActor
 protocol LyricsSource {
     func lyrics(for track: NowPlayingTrack) async throws -> [TimedLyricLine]
 }
 
+@MainActor
 protocol LyricsCache {
     func lyrics(for trackID: String) -> [TimedLyricLine]?
     func store(_ lyrics: [TimedLyricLine], for trackID: String)
@@ -21,6 +23,7 @@ struct MockLyricsSource: LyricsSource {
     }
 }
 
+@MainActor
 final class InMemoryLyricsCache: LyricsCache {
     private var storage: [String: [TimedLyricLine]] = [:]
 

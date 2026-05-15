@@ -5,8 +5,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let settingsStore = OverlaySettingsStore()
     lazy var overlayState = LyricsOverlayState(settings: settingsStore)
     lazy var overlayCoordinator = OverlayCoordinator(
-        playbackSource: MockPlaybackSource(),
-        lyricsSource: MockLyricsSource(),
+        playbackSource: AppleMusicPlaybackSource(),
+        lyricsSource: NetworkLyricsSource(),
         lyricsCache: InMemoryLyricsCache(),
         overlayState: overlayState
     )
