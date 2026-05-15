@@ -3,8 +3,8 @@ import Foundation
 
 @MainActor
 final class LyricsOverlayState: ObservableObject {
-    let settings: OverlaySettingsStore
-    let presentation: OverlayPresentationState
+    var settings: OverlaySettingsStore
+    var presentation: OverlayPresentationState
 
     private let themeEngine: LyricsThemeEngine
     private let layoutEngine: LyricsLayoutEngine
@@ -38,7 +38,6 @@ final class LyricsOverlayState: ObservableObject {
     var progress: TimeInterval { presentation.progress }
     var isPlaying: Bool { presentation.isPlaying }
     var activeIndex: Int? { presentation.activeIndex }
-    var isExpanded: Bool { presentation.isExpanded }
     var phase: OverlayDisplayPhase { presentation.phase }
     var theme: IslandTheme { themeEngine.makeTheme(for: nowPlaying, settings: settings) }
 
@@ -47,25 +46,12 @@ final class LyricsOverlayState: ObservableObject {
             track: nowPlaying,
             currentLine: activeLine,
             nextLine: upcomingLine,
-            settings: settings,
-            isExpanded: isExpanded
+            settings: settings
         )
     }
 
     func apply(snapshot: NowPlayingSnapshot) {
         lyrics = snapshot.lyrics
         presentation.ingest(snapshot: snapshot, animateTrackChanges: settings.enableTrackAnimation)
-    }
-
-    func handleHoverChange(isInside: Bool) {
-        presentation.updateHover(isInside: isInside, settings: settings)
-    }
-
-    func toggleExpanded() {
-        presentation.setExpanded(!presentation.isExpanded)
-    }
-
-    func setExpanded(_ expanded: Bool) {
-        presentation.setExpanded(expanded)
     }
 }

@@ -6,7 +6,7 @@ struct TimedLyricLine: Identifiable, Codable, Equatable {
     let startTime: TimeInterval
     let endTime: TimeInterval?
     let text: String
-    let translation: String?
+    var translation: String?
 
     init(
         id: UUID = UUID(),
@@ -114,6 +114,24 @@ enum LyricsTextAlignmentOption: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum LyricsColorStyle: String, Codable, CaseIterable, Identifiable {
+    case white
+    case artwork
+    case sky
+    case gold
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .white: return "纯白"
+        case .artwork: return "封面主色"
+        case .sky: return "冰蓝"
+        case .gold: return "暖金"
+        }
+    }
+}
+
 extension Color {
     init?(hex: String) {
         let sanitized = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -128,3 +146,52 @@ extension Color {
         )
     }
 }
+
+// MARK: - Position Anchor
+
+enum OverlayVerticalAnchor: String, Codable, CaseIterable, Identifiable {
+    case top
+    case center
+    case bottom
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .top:    return "顶部"
+        case .center: return "居中"
+        case .bottom: return "底部"
+        }
+    }
+}
+
+enum OverlayHorizontalAnchor: String, Codable, CaseIterable, Identifiable {
+    case leading
+    case center
+    case trailing
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .leading:  return "靠左"
+        case .center:   return "居中"
+        case .trailing: return "靠右"
+        }
+    }
+}
+
+enum IslandStyle: String, Codable, CaseIterable, Identifiable {
+    case standard
+    case split
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .standard: return "标准 (带标题)"
+        case .split:    return "分列 (避让刘海)"
+        }
+    }
+}
+

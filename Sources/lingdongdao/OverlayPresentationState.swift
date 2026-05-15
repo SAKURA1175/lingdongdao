@@ -1,18 +1,14 @@
 import Foundation
 
 enum OverlayDisplayPhase: Equatable {
-    case collapsed
-    case hoverExpanding
-    case expanded
-    case hoverCollapsing
+    case idle
     case trackTransition
     case lyricTransition
 }
 
 @MainActor
 final class OverlayPresentationState: ObservableObject {
-    @Published private(set) var phase: OverlayDisplayPhase = .collapsed
-    @Published private(set) var isExpanded = false
+    @Published private(set) var phase: OverlayDisplayPhase = .idle
     @Published private(set) var currentTrack = NowPlayingTrack.placeholder
     @Published private(set) var currentLine: TimedLyricLine?
     @Published private(set) var previousLine: TimedLyricLine?
@@ -22,9 +18,6 @@ final class OverlayPresentationState: ObservableObject {
     @Published private(set) var isPlaying = true
     @Published private(set) var lyricTransitionToken = 0
     @Published private(set) var trackTransitionToken = 0
-
-    private var hoverTask: Task<Void, Never>?
-    private let hoverExitDelay: UInt64 = 140_000_000
 
     func ingest(snapshot: NowPlayingSnapshot, animateTrackChanges: Bool) {
         progress = snapshot.progress
@@ -58,35 +51,7 @@ final class OverlayPresentationState: ObservableObject {
             phase = .lyricTransition
             settleAfterTransition()
         } else {
-            settlePhase()
-        }
-    }
-
-    func setExpanded(_ expanded: Bool) {
-        hoverTask?.cancel()
-        isExpanded = expanded
-        phase = expanded ? .hoverExpanding : .hoverCollapsing
-        settleAfterTransition()
-    }
-
-    func updateHover(isInside: Bool, settings: OverlaySettingsStore) {
-        guard settings.expandOnHover else { return }
-        guard isInside != isExpanded else { return }
-
-        hoverTask?.cancel()
-
-        if isInside {
-            setExpanded(true)
-            return
-        }
-
-        phase = .hoverCollapsing
-        hoverTask = Task { @MainActor [weak self] in
-            guard let self else { return }
-            try? await Task.sleep(nanoseconds: hoverExitDelay)
-            guard !Task.isCancelled else { return }
-            self.isExpanded = false
-            self.settlePhase()
+            phase = .idle
         }
     }
 
@@ -95,11 +60,7 @@ final class OverlayPresentationState: ObservableObject {
             guard let self else { return }
             try? await Task.sleep(nanoseconds: 240_000_000)
             guard !Task.isCancelled else { return }
-            self.settlePhase()
+            self.phase = .idle
         }
-    }
-
-    private func settlePhase() {
-        phase = isExpanded ? .expanded : .collapsed
     }
 }
