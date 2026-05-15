@@ -4,59 +4,55 @@ import SwiftUI
 struct OverlayLayout: Equatable {
     let collapsedWidth: CGFloat
     let collapsedHeight: CGFloat
-    let expandedSize: CGSize
+    let collapsedLyricsHeight: CGFloat
+    let reservesSecondaryLine: Bool
     let textAlignment: TextAlignment
     let horizontalAlignment: HorizontalAlignment
 }
 
+@MainActor
 struct LyricsLayoutEngine {
+    private enum Metrics {
+        static let capsuleHeight: CGFloat = 42
+        static let lyricsSpacing: CGFloat = 14
+        static let singleLyricsHeight: CGFloat = 22
+        static let doubleLyricsHeight: CGFloat = 40
+    }
+
     func makeLayout(
         track: NowPlayingTrack,
         currentLine: TimedLyricLine?,
         nextLine: TimedLyricLine?,
-        settings: OverlaySettingsStore,
-        isExpanded: Bool
+        settings: OverlaySettingsStore
     ) -> OverlayLayout {
-        let referenceText = currentLine?.text ?? track.title
-        let nextText = nextLine?.text ?? track.artist
-        let width = collapsedWidth(
-            referenceText: referenceText,
-            secondaryText: nextText,
-            settings: settings
-        )
+        let isSplit = settings.islandStyle == .split
+        let width = isSplit ? 310 : capsuleWidth(settings: settings)
+        let reservesSecondaryLine = settings.showBottomLyrics && (settings.lineMode == .double || settings.showTranslation)
+        let lyricsHeight = settings.showBottomLyrics
+            ? (reservesSecondaryLine ? Metrics.doubleLyricsHeight : Metrics.singleLyricsHeight)
+            : 0
 
-        let collapsedHeight: CGFloat
-        if settings.showBottomLyrics {
-            collapsedHeight = settings.lineMode == .double || settings.showTranslation ? 94 : 76
-        } else {
-            collapsedHeight = 50
-        }
+        let baseCapsuleHeight = Metrics.capsuleHeight
 
-        let expandedWidth: CGFloat = settings.showTranslation ? 784 : 748
-        let expandedHeight: CGFloat = settings.lineMode == .double ? 262 : 236
+        let totalHeight = baseCapsuleHeight
+            + (settings.showBottomLyrics ? Metrics.lyricsSpacing + lyricsHeight : 0)
 
         return OverlayLayout(
             collapsedWidth: width,
-            collapsedHeight: collapsedHeight,
-            expandedSize: CGSize(width: expandedWidth, height: expandedHeight),
+            collapsedHeight: totalHeight,
+            collapsedLyricsHeight: lyricsHeight,
+            reservesSecondaryLine: reservesSecondaryLine,
             textAlignment: settings.lyricsAlignment.textAlignment,
             horizontalAlignment: settings.lyricsAlignment.horizontalAlignment
         )
     }
 
-    private func collapsedWidth(
-        referenceText: String,
-        secondaryText: String,
-        settings: OverlaySettingsStore
-    ) -> CGFloat {
+    private func capsuleWidth(settings: OverlaySettingsStore) -> CGFloat {
         switch settings.widthMode {
         case .default:
             return 286
         case .adaptive:
-            let combined = max(referenceText.count, secondaryText.count)
-            let estimate = CGFloat(combined) * 7.5 + 106
-            let adjusted = settings.lineMode == .double ? estimate + 26 : estimate
-            return min(max(272, adjusted), 420)
+            return settings.showBottomLyrics ? 338 : 320
         case .maxWidth:
             return 430
         }
